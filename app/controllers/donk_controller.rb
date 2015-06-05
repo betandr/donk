@@ -52,14 +52,16 @@ class DonkController < ApplicationController
             system "sox -n -r 44100 -c 2 #{clip_half_padding_file} trim 0.0 0.#{frequency / 2}"
 
             if (type == "kick") then
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
+
+                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_1.wav")
 
                 combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_2.wav")
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
+                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_3.wav")
+
 
                 system "sox -m
                     #{Rails.public_path}/clips/#{type}.wav
@@ -71,10 +73,10 @@ class DonkController < ApplicationController
                 send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
 
             elsif (type == "clap") then
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
+                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_1.wav")
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
+                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_2.wav")
 
                 system "sox -m
@@ -85,13 +87,13 @@ class DonkController < ApplicationController
                 send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
 
             elsif (type == "donk") then
-                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_file}"], :combine => :concatenate)
+                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_1.wav")
 
                 combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_2.wav")
 
-                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
+                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_file}"], :combine => :concatenate)
                 combiner.write("/tmp/#{type}_#{bpm}_3.wav")
 
                 system "sox -m
