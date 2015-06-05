@@ -4,6 +4,9 @@ gem 'brightbox'
 gem 'capistrano', '2.15.5'
 gem 'mysql'
 
+# Gem to wrap calls to Sox
+gem 'ruby-sox'
+
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.1'
 # Use sqlite3 as the database for Active Record
