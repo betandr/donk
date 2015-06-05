@@ -2,9 +2,10 @@
 You know what you wanna do (as a service) with that?
 
 # generate a donk
-generate a 4/4 kick [donk, donk, donk, donk] at 120 BPM
+
+generate a 4/4 kick [kick, kick, kick, kick] at 120 BPM
 ```
-http://donk.andr.io/kick?bmp=120&pattern=xxxx
+http://donk.andr.io/kick?bmp=120
 ```
 
 generate a 4/4 clap [__, clap, __, clap] at 120 BPM
