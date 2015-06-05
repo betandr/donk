@@ -35,31 +35,48 @@ class DonkController < ApplicationController
         end
 
         def loop(type, params)
-            bmp = params.has_key?(:bmp) ? params[:bmp].to_i : 120
-            pattern = params.has_key?(:pattern) ? params[:pattern] : "xxxx"
+            bpm = params.has_key?(:bmp) ? params[:bmp].to_i : 120
 
-            clip_padding = space_length(clip_length(type), bmp)
+            frequency = 60000 / bpm
+            clip_padding = space_length(clip_length(type), bpm)
 
-            tmp_file = "/tmp/silence_#{clip_padding}.wav"
+            tmp_padding_file = "/tmp/silence_#{clip_padding}.wav"
+            tmp_frequency_file = "/tmp/silence_#{frequency}.wav"
 
-            system "sox -n -r 44100 -c 2 #{tmp_file} trim 0.0 0.#{clip_padding}"
+            system "sox -n -r 44100 -c 2 #{tmp_padding_file} trim 0.0 0.#{clip_padding}"
 
-            combiner = Sox::Combiner.new(
-                [
-                    "#{Rails.public_path}/clips/#{type}.mp3",
-                    "#{tmp_file}",
-                    "#{Rails.public_path}/clips/#{type}.mp3",
-                    "#{tmp_file}",
-                    "#{Rails.public_path}/clips/#{type}.mp3",
-                    "#{tmp_file}",
-                    "#{Rails.public_path}/clips/#{type}.mp3",
-                    "#{tmp_file}",
-                ], :combine => :concatenate)
+            if (type == "kick") then
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                    ], :combine => :concatenate)
 
+                combiner.write("#{Rails.public_path}/loops/#{type}_#{bpm}.wav")
+                send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
 
+            elsif (type = "clap") then
 
-            combiner.write("#{Rails.public_path}/clips/#{type}_#{bmp}_#{pattern}.mp3")
+                system "sox -n -r 44100 -c 2 #{tmp_frequency_file} trim 0.0 0.#{frequency}"
 
-            send_file "#{Rails.public_path}/clips/#{type}_#{bmp}_#{pattern}.mp3", :type=>"audio/mp3", :filename => "#{type}_#{bmp}_#{pattern}.mp3"
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{tmp_frequency_file}",
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                        "#{tmp_frequency_file}",
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "#{tmp_padding_file}",
+                    ], :combine => :concatenate)
+
+                combiner.write("#{Rails.public_path}/loops/#{type}_#{bpm}.wav")
+                send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
+            end
         end
 end
