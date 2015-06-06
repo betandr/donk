@@ -7,10 +7,10 @@ Built for Midem Hack Day 2015
 
 generate a 4/4 kick [kick, kick, kick, kick] at 120 BPM
 ```
-http://donk.andr.io/kick?bmp=120
+http://donk.andr.io/kick
 ```
 
-generate a 4/4 clap [__, clap, __, clap] at 120 BPM
+generate a 4/4 clap [__, clap, __, clap] at 130 BPM
 ```
-http://donk.andr.io/clap?bmp=120&pattern=oxox
+http://donk.andr.io/clap?bmp=130
 ```
