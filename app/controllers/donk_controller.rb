@@ -44,65 +44,140 @@ class DonkController < ApplicationController
 
             frequency = 60000 / bpm
 
+            hash = generate_hash()
+
             clip_file = "#{Rails.public_path}/clips/#{type}.wav"
-            clip_padding_file = "/tmp/silence_#{frequency}.wav"
-            clip_half_padding_file = "/tmp/silence_#{frequency / 2}.wav"
+            clip_padding_file = "/tmp/silence_#{frequency}_#{hash}.wav"
+            clip_half_padding_file = "/tmp/silence_#{frequency / 2}_#{hash}.wav"
 
             system "sox -n -r 44100 -c 2 #{clip_padding_file} trim 0.0 0.#{frequency}"
             system "sox -n -r 44100 -c 2 #{clip_half_padding_file} trim 0.0 0.#{frequency / 2}"
 
             if (type == "kick") then
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_1.wav")
+                combiner.write("/tmp/#{type}_#{bpm}_part_1_#{hash}.wav")
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_2.wav")
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_3.wav")
+                combiner.write("/tmp/#{type}_#{bpm}_part_2_#{hash}.wav")
 
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                system "sox -m
-                    #{Rails.public_path}/clips/#{type}.wav
-                    /tmp/#{type}_#{bpm}_1.wav
-                    /tmp/#{type}_#{bpm}_2.wav
-                    /tmp/#{type}_#{bpm}_3.wav
-                    #{Rails.public_path}/loops/#{type}_#{bpm}.wav"
+                combiner.write("/tmp/#{type}_#{bpm}_part_3_#{hash}.wav")
 
-                send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{Rails.public_path}/clips/#{type}.wav",
+                        "/tmp/#{type}_#{bpm}_part_1_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_2_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_3_#{hash}.wav"
+                    ], :combine => :mix, :rate => 44100, :channels => 1)
+
+                combiner.write("#{Rails.public_path}/loops/#{type}_#{bpm}.wav")
+
+                send_file("#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav")
 
             elsif (type == "clap") then
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_1.wav")
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                combiner = Sox::Combiner.new(["#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_2.wav")
+                combiner.write("/tmp/#{type}_#{bpm}_part_1_#{hash}.wav")
 
-                system "sox -m
-                    /tmp/#{type}_#{bpm}_1.wav
-                    /tmp/#{type}_#{bpm}_2.wav
-                    #{Rails.public_path}/loops/#{type}_#{bpm}.wav"
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
+                combiner.write("/tmp/#{type}_#{bpm}_part_2_#{hash}.wav")
+
+                combiner = Sox::Combiner.new(
+                    [
+                        "/tmp/#{type}_#{bpm}_part_1_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_2_#{hash}.wav",
+                    ], :combine => :mix, :rate => 44100, :channels => 1)
+
+                combiner.write("#{Rails.public_path}/loops/#{type}_#{bpm}.wav")
+
+                send_file("#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav")
 
             elsif (type == "donk") then
-                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_1.wav")
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_half_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_padding_file}", "#{clip_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_2.wav")
+                combiner.write("/tmp/#{type}_#{bpm}_part_4_#{hash}.wav")
 
-                combiner = Sox::Combiner.new(["#{clip_half_padding_file}", "#{clip_file}"], :combine => :concatenate)
-                combiner.write("/tmp/#{type}_#{bpm}_3.wav")
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_padding_file}",
+                        "#{clip_half_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
 
-                system "sox -m
-                    /tmp/#{type}_#{bpm}_1.wav
-                    /tmp/#{type}_#{bpm}_2.wav
-                    /tmp/#{type}_#{bpm}_3.wav
-                    #{Rails.public_path}/loops/#{type}_#{bpm}.wav"
+                combiner.write("/tmp/#{type}_#{bpm}_part_3_#{hash}.wav")
 
-                send_file "#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav"
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_padding_file}",
+                        "#{clip_half_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
+
+                combiner.write("/tmp/#{type}_#{bpm}_part_2_#{hash}.wav")
+
+                combiner = Sox::Combiner.new(
+                    [
+                        "#{clip_half_padding_file}",
+                        "#{clip_file}"
+                    ], :combine => :concatenate)
+
+                combiner.write("/tmp/#{type}_#{bpm}_part_1_#{hash}.wav")
+
+                combiner = Sox::Combiner.new(
+                    [
+                        "/tmp/#{type}_#{bpm}_part_1_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_2_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_3_#{hash}.wav",
+                        "/tmp/#{type}_#{bpm}_part_4_#{hash}.wav",
+                    ], :combine => :mix, :rate => 44100, :channels => 1)
+
+                combiner.write("#{Rails.public_path}/loops/#{type}_#{bpm}.wav")
+
+                send_file("#{Rails.public_path}/loops/#{type}_#{bpm}.wav", :type=>"audio/wav", :filename => "#{type}_#{bpm}.wav")
             end
         end
+
+        private
+            def generate_hash
+                o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
+                (0...50).map { o[rand(o.length)] }.join
+            end
 end
