@@ -40,7 +40,7 @@ class DonkController < ApplicationController
 
         # Create the loop by concatenating silence and the clips
         def loop(type, params)
-            bpm = params.has_key?(:bmp) ? params[:bmp].to_i : 120
+            bpm = params.has_key?(:bpm) ? params[:bpm].to_i : 120
 
             frequency = 60000 / bpm
 
