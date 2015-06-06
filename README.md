@@ -1,6 +1,8 @@
 ## donk as a service
 You know what you wanna do with that (as a service)?
 
+Built for Midem Hack Day 2015
+
 # generate a donk
 
 generate a 4/4 kick [kick, kick, kick, kick] at 120 BPM
